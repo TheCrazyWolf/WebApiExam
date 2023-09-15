@@ -37,7 +37,7 @@ namespace WebApiExam.Controllers
         [HttpGet("GetWeatherByCity")]
         public IActionResult GetWeather(string token, int idCity)
         {
-            var found = AccountController.Tokens.FirstOrDefault(x => x.Token == token);
+            var found = AccountController.Tokens.FirstOrDefault(x => x.Token == token && x.ExpireDate.Ticks <= DateTime.Now.Ticks);
             if (found == null)
                 return Unauthorized("Токен недействительный, истек или не существует");
 
