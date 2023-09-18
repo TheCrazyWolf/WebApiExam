@@ -18,18 +18,19 @@ namespace WebApiExam.Controllers
             new City() { IdCity = 6, Name = "Сочи"},
         };
 
-        public static List<string> WeatherSun = new List<string>()
-        {
-            "Солнечно", "Облачно", "Малооблачно", "Дождь", "Небольшой дождь", "Снег"
-        };
 
-
-        [HttpGet("GetCity")]
-        public IActionResult GetCity(string token)
+        [HttpGet("GetCities")]
+        public IActionResult GetCities(string token)
         {
             var found = AccountController.Tokens.FirstOrDefault(x => x.Token == token);
+            
             if (found == null)
+            {
+                Console.WriteLine($"[{DateTime.Now}] Неудачная попытка получить список городов. Недействительный токен: {token} ");
                 return Unauthorized("Токен недействительный, истек или не существует");
+            }
+
+            Console.WriteLine($"[{DateTime.Now}] Успешно получил список городов: {found.Account.Fio}");
 
             return Ok(Cityies);
         }
@@ -37,9 +38,14 @@ namespace WebApiExam.Controllers
         [HttpGet("GetWeatherByCity")]
         public IActionResult GetWeather(string token, int idCity)
         {
-            var found = AccountController.Tokens.FirstOrDefault(x => x.Token == token && x.ExpireDate.Ticks <= DateTime.Now.Ticks);
+            var found = AccountController
+                .Tokens.FirstOrDefault(x => x.Token == token && x.ExpireDate.Ticks >= DateTime.Now.Ticks);
+
             if (found == null)
+            {
+                Console.WriteLine($"[{DateTime.Now}] Неудачная попытка получить список городов. Недействительный токен: {token} ");
                 return Unauthorized("Токен недействительный, истек или не существует");
+            }    
 
             List<WeatherResult> result = new();
 
@@ -49,10 +55,12 @@ namespace WebApiExam.Controllers
                 {
                     Date = DateOnly.FromDateTime(DateTime.Now.Date.AddDays(i)),
                     Temperature = new Random().Next(-30, 30),
-                    Description = WeatherSun[new Random().Next(0, WeatherSun.Count)]
                 };
                 result.Add(weather);
             }
+
+            Console.WriteLine($"[{DateTime.Now}] Успешно получил погоду: {found.Account.Fio}");
+
             return Ok(result);
         }
     }
